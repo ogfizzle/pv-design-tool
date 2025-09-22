@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal PV System Design Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .system-type-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .system-type-card {
+            flex: 1;
+            max-width: 300px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .system-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .system-type-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .system-type-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .system-type-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .system-type-range {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+            min-height: 600px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .system-type-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-tabs {
+                overflow-x: scroll;
+            }
+
+            .nav-tab {
+                min-width: 120px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            height: fit-content;
+        }
+
+        .results-section {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .result-icon {
+            font-size: 1.3rem;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .result-details {
+            font-size: 0.85rem;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .success {
+            background: #d1edff;
+            border-left-color: #0084ff;
+            color: #004085;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .info-card {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+            color: #0d47a1;
+        }
+
+        .battery-options {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .battery-options.show {
+            display: block;
+        }
+
+        .battery-title {
+            margin-bottom: 15px;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #495057;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+            min-height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌞 Universal PV System Design Tool</h1>
+            <p>Complete Solar System Design for Residential, Commercial & Utility-Scale Projects</p>
+        </div>
+
+        <div class="system-type-selector">
+            <div class="system-type-card active" onclick="selectSystemType('residential')">
+                <div class="system-type-icon">🏠</div>
+                <div class="system-type-title">Residential</div>
+                <div class="system-type-range">3-20 kW | Rooftop</div>
+            </div>
+            <div class="system-type-card" onclick="selectSystemType('commercial')">
+                <div class="system-type-icon">🏢</div>
+                <div class="system-type-title">Commercial</div>
+                <div class="system-type-range">20kW-2MW | Rooftop/Ground</div>
+            </div>
+            <div class="system-type-card" onclick="selectSystemType('utility')">
+                <div class="system-type-icon">⚡</div>
+                <div class="system-type-title">Utility-Scale</div>
+                <div class="system-type-range">2MW+ | Ground-Mount</div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('system')">🔧 System Design</button>
+            <button class="nav-tab" onclick="switchTab('installation')">🏗️ Installation</button>
+            <button class="nav-tab" onclick="switchTab('electrical')">⚡ Electrical</button>
+            <button class="nav-tab" onclick="switchTab('financial')">💰 Financial</button>
+            <button class="nav-tab" onclick="switchTab('performance')">📊 Performance</button>
+            <button class="nav-tab" id="battery-tab-btn" onclick="switchTab('battery')" style="display: none;">🔋 Battery Storage</button>
+        </div>
+
+        <!-- System Design Tab -->
+        <div id="system-tab" class="tab-content active">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">⚙️ System Parameters</h2>
+                    
+                    <div class="input-group">
+                        <label for="systemCapacity">System Capacity</label>
+                        <div class="grid-2">
+                            <input type="number" id="systemCapacity" step="0.1" value="8" min="0.1">
+                            <select id="capacityUnit">
+                                <option value="kW" selected>kW</option>
+                                <option value="MW">MW</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="installationType">Installation Type</label>
+                        <select id="installationType">
+                            <option value="rooftop_residential" selected>Residential Rooftop</option>
+                            <option value="rooftop_commercial">Commercial Rooftop</option>
+                            <option value="ground_small">Small Ground-Mount</option>
+                            <option value="ground_utility">Utility Ground-Mount</option>
+                            <option value="carport">Solar Carport</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="roofArea">Available Area (m²)</label>
+                            <input type="number" id="roofArea" value="60" min="10">
+                        </div>
+                        <div class="input-group">
+                            <label for="roofOrientation">Orientation</label>
+                            <select id="roofOrientation">
+                                <option value="south" selected>South (Optimal)</option>
+                                <option value="southeast">Southeast</option>
+                                <option value="southwest">Southwest</option>
+                                <option value="east">East</option>
+                                <option value="west">West</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="roofTilt">Tilt Angle (°)</label>
+                            <input type="number" id="roofTilt" value="30" min="0" max="60">
+                        </div>
+                        <div class="input-group">
+                            <label for="shadingFactor">Shading (%)</label>
+                            <input type="number" id="shadingFactor" value="5" min="0" max="50">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="moduleType">PV Module Type</label>
+                        <select id="moduleType">
+                            <option value="residential_mono" selected>Residential Mono 400W</option>
+                            <option value="commercial_mono">Commercial Mono 540W</option>
+                            <option value="utility_mono">Utility Mono 580W</option>
+                            <option value="bifacial">Bifacial 580W</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="inverterType">Inverter Type</label>
+                            <select id="inverterType">
+                                <option value="string" selected>String Inverters</option>
+                                <option value="power_optimizer">Power Optimizers</option>
+                                <option value="micro">Microinverters</option>
+                                <option value="central">Central Inverters</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="solarIrradiance">Solar Irradiance (kWh/m²/day)</label>
+                            <input type="number" id="solarIrradiance" step="0.1" value="5.0" min="3" max="8">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="batteryStorage" onchange="toggleBatteryStorage()" style="margin-right: 8px;">
+                            Include Battery Storage System
+                        </label>
+                    </div>
+
+                    <div id="battery-options" class="battery-options">
+                        <h3 class="battery-title">🔋 Battery Storage Configuration</h3>
+                        
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="batteryType">Battery Chemistry</label>
+                                <select id="batteryType">
+                                    <option value="lithium_iron" selected>Lithium Iron Phosphate</option>
+                                    <option value="lithium_ion">Lithium-Ion NMC</option>
+                                    <option value="lead_acid">Lead Acid</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="batteryStrategy">Storage Strategy</label>
+                                <select id="batteryStrategy">
+                                    <option value="backup" selected>Emergency Backup</option>
+                                    <option value="self_consumption">Self-Consumption</option>
+                                    <option value="time_shift">Time-of-Use Shifting</option>
+                                    <option value="off_grid">Off-Grid</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="backupDuration">Backup Duration (hours)</label>
+                                <input type="number" id="backupDuration" value="4" min="1" max="72">
+                            </div>
+                            <div class="input-group">
+                                <label for="criticalLoad">Critical Load (kW)</label>
+                                <input type="number" id="criticalLoad" step="0.1" value="5" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateSystem()">
+                        🔬 Calculate Complete System
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">📊 System Design Results</h2>
+                    <div id="results-container">
+                        <div class="result-card success">
+                            <div class="result-header">
+                                <span class="result-icon">🏁</span>
+                                <span class="result-title">Ready for Calculation</span>
+                            </div>
+                            <div class="result-details">
+                                Select your system type and configure parameters to generate comprehensive system design.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Installation Tab -->
+        <div id="installation-tab" class="tab-content">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">🏗️ Installation Parameters</h2>
+                    
+                    <div class="input-group">
+                        <label for="roofMaterial">Roof Material (for rooftop)</label>
+                        <select id="roofMaterial">
+                            <option value="asphalt_shingle" selected>Asphalt Shingle</option>
+                            <option value="tile">Tile Roof</option>
+                            <option value="metal">Metal Roof</option>
+                            <option value="flat_membrane">Flat Membrane</option>
+                            <option value="concrete">Concrete</option>
+                            <option value="ground">Ground Mount</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="roofAge">Roof Age (years)</label>
+                            <input type="number" id="roofAge" value="5" min="0" max="50">
+                        </div>
+                        <div class="input-group">
+                            <label for="structuralRating">Structural Load Rating</label>
+                            <select id="structuralRating">
+                                <option value="excellent">Excellent (new/reinforced)</option>
+                                <option value="good" selected>Good (standard)</option>
+                                <option value="fair">Fair (may need reinforcement)</option>
+                                <option value="poor">Poor (needs assessment)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="accessibility">Site Accessibility</label>
+                        <select id="accessibility">
+                            <option value="easy" selected>Easy Access</option>
+                            <option value="moderate">Moderate Access</option>
+                            <option value="difficult">Difficult Access</option>
+                        </select>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateInstallation()">
+                        🏗️ Calculate Installation Requirements
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">🏗️ Installation Analysis</h2>
+                    <div id="installation-results">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">🏗️</span>
+                                <span class="result-title">Installation Ready</span>
+                            </div>
+                            <div class="result-details">
+                                Configure installation parameters and calculate system design first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Electrical Tab -->
+        <div id="electrical-tab" class="tab-content">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">⚡ Electrical Configuration</h2>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="gridVoltage">Grid Connection Voltage</label>
+                            <select id="gridVoltage">
+                                <option value="120_240" selected>120/240V (US Residential)</option>
+                                <option value="208_120">208/120V (US Commercial)</option>
+                                <option value="480_277">480/277V (US Commercial)</option>
+                                <option value="230_400">230/400V (EU)</option>
+                                <option value="mv">Medium Voltage (Utility)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="meterType">Metering Type</label>
+                            <select id="meterType">
+                                <option value="net_metering" selected>Net Metering</option>
+                                <option value="feed_in_tariff">Feed-in Tariff</option>
+                                <option value="time_of_use">Time-of-Use</option>
+                                <option value="battery_storage">Battery Storage System</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="mainPanelUpgrade">Main Panel Upgrade Needed</label>
+                        <select id="mainPanelUpgrade">
+                            <option value="none" selected>No Upgrade Needed</option>
+                            <option value="breaker">New Breaker Only</option>
+                            <option value="panel">New Panel Required</option>
+                            <option value="service">Service Upgrade Required</option>
+                        </select>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateElectrical()">
+                        ⚡ Calculate Electrical Requirements
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">⚡ Electrical Analysis</h2>
+                    <div id="electrical-results">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">⚡</span>
+                                <span class="result-title">Electrical Ready</span>
+                            </div>
+                            <div class="result-details">
+                                Configure electrical parameters and calculate system design first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Tab -->
+        <div id="financial-tab" class="tab-content">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">💰 Financial Parameters</h2>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="currency">Currency</label>
+                            <select id="currency">
+                                <option value="USD" selected>US Dollar (USD)</option>
+                                <option value="EUR">Euro (EUR)</option>
+                                <option value="GBP">British Pound (GBP)</option>
+                                <option value="AUD">Australian Dollar (AUD)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="electricityRate">Electricity Rate (per kWh)</label>
+                            <input type="number" id="electricityRate" step="0.01" value="0.12" min="0.05" max="0.50">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="federalIncentive">Federal Incentive (%)</label>
+                            <input type="number" id="federalIncentive" value="30" min="0" max="50">
+                        </div>
+                        <div class="input-group">
+                            <label for="stateIncentive">State/Local Incentive (%)</label>
+                            <input type="number" id="stateIncentive" value="0" min="0" max="30">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="electricityInflation">Annual Electricity Rate Increase (%)</label>
+                        <input type="number" id="electricityInflation" step="0.1" value="3.0" min="1" max="8">
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateFinancial()">
+                        💰 Calculate Financial Analysis
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">💰 Financial Analysis</h2>
+                    <div id="financial-results">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">💰</span>
+                                <span class="result-title">Financial Ready</span>
+                            </div>
+                            <div class="result-details">
+                                Configure financial parameters and calculate system design first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performance-tab" class="tab-content">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">📊 Performance Parameters</h2>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="systemDegradation">Annual Degradation (%)</label>
+                            <input type="number" id="systemDegradation" step="0.01" value="0.5" min="0.3" max="1.0">
+                        </div>
+                        <div class="input-group">
+                            <label for="inverterEfficiency">Inverter Efficiency (%)</label>
+                            <input type="number" id="inverterEfficiency" step="0.1" value="97.5" min="95" max="99">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="soiling">Soiling Losses (%)</label>
+                            <input type="number" id="soiling" step="0.1" value="2.0" min="1" max="8">
+                        </div>
+                        <div class="input-group">
+                            <label for="analysisYears">Analysis Period (years)</label>
+                            <input type="number" id="analysisYears" value="25" min="10" max="30">
+                        </div>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculatePerformance()">
+                        📊 Calculate Performance Analysis
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">📊 Performance Analysis</h2>
+                    <div id="performance-results">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">📊</span>
+                                <span class="result-title">Performance Ready</span>
+                            </div>
+                            <div class="result-details">
+                                Configure performance parameters and calculate system design first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Battery Storage Tab -->
+        <div id="battery-tab" class="tab-content">
+            <div class="main-content">
+                <div class="input-section">
+                    <h2 class="section-title">🔋 Battery Storage Analysis</h2>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="outageFrequency">Power Outages per Year</label>
+                            <input type="number" id="outageFrequency" value="2" min="0" max="20">
+                        </div>
+                        <div class="input-group">
+                            <label for="peakDemandCharge">Peak Demand Charge ($/kW)</label>
+                            <input type="number" id="peakDemandCharge" step="0.01" value="15" min="0">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="timeOfUseSpread">Time-of-Use Rate Spread ($/kWh)</label>
+                            <input type="number" id="timeOfUseSpread" step="0.01" value="0.15" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="batteryLife">Expected Battery Life (years)</label>
+                            <input type="number" id="batteryLife" value="15" min="10" max="25">
+                        </div>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateBatteryAnalysis()">
+                        🔋 Analyze Battery Performance
+                    </button>
+                </div>
+
+                <div class="results-section">
+                    <h2 class="section-title">🔋 Battery Storage Analysis</h2>
+                    <div id="battery-results">
+                        <div class="result-card info-card">
+                            <div class="result-header">
+                                <span class="result-icon">🔋</span>
+                                <span class="result-title">Battery Analysis Ready</span>
+                            </div>
+                            <div class="result-details">
+                                Configure battery parameters above and click "Analyze Battery Performance" for detailed analysis.
+                                Make sure you have calculated the system design with battery storage enabled first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSystemType = 'residential';
+        let batteryEnabled = false;
+        let systemData = null;
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Add active class to selected tab and content
+            const activeTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            const activeContent = document.getElementById(tabName + '-tab');
+            
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+            if (activeContent) {
+                activeContent.classList.add('active');
+            }
+
+            // Special handling for battery tab - check if battery is enabled
+            if (tabName === 'battery' && !batteryEnabled) {
+                alert('Please enable battery storage in the System Design tab first');
+                switchTab('system');
+                return;
+            }
+        }
+
+        // System type selection
+        function selectSystemType(type) {
+            currentSystemType = type;
+            
+            // Update UI
+            document.querySelectorAll('.system-type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.system-type-card').classList.add('active');
+            
+            // Update default values
+            updateDefaultValues(type);
+        }
+
+        // Update default values based on system type
+        function updateDefaultValues(type) {
+            const systemCapacityEl = document.getElementById('systemCapacity');
+            const capacityUnitEl = document.getElementById('capacityUnit');
+            const roofAreaEl = document.getElementById('roofArea');
+            const installationTypeEl = document.getElementById('installationType');
+            const moduleTypeEl = document.getElementById('moduleType');
+
+            if (type === 'residential') {
+                systemCapacityEl.value = 8;
+                capacityUnitEl.value = 'kW';
+                roofAreaEl.value = 60;
+                installationTypeEl.value = 'rooftop_residential';
+                moduleTypeEl.value = 'residential_mono';
+            } else if (type === 'commercial') {
+                systemCapacityEl.value = 250;
+                capacityUnitEl.value = 'kW';
+                roofAreaEl.value = 2000;
+                installationTypeEl.value = 'rooftop_commercial';
+                moduleTypeEl.value = 'commercial_mono';
+            } else if (type === 'utility') {
+                systemCapacityEl.value = 50;
+                capacityUnitEl.value = 'MW';
+                roofAreaEl.value = 500000;
+                installationTypeEl.value = 'ground_utility';
+                moduleTypeEl.value = 'utility_mono';
+            }
+        }
+
+        // Toggle battery storage options
+        function toggleBatteryStorage() {
+            batteryEnabled = document.getElementById('batteryStorage').checked;
+            const batteryOptions = document.getElementById('battery-options');
+            const batteryTabButton = document.getElementById('battery-tab-btn');
+            
+            if (batteryEnabled) {
+                batteryOptions.classList.add('show');
+                if (batteryTabButton) {
+                    batteryTabButton.style.display = 'block';
+                }
+            } else {
+                batteryOptions.classList.remove('show');
+                if (batteryTabButton) {
+                    batteryTabButton.style.display = 'none';
+                }
+                // Switch to system tab if currently on battery tab
+                const currentBatteryTab = document.getElementById('battery-tab');
+                if (currentBatteryTab && currentBatteryTab.classList.contains('active')) {
+                    switchTab('system');
+                }
+            }
+        }
+
+        // Get module specifications
+        function getModuleSpecs(moduleType) {
+            const specs = {
+                'residential_mono': { power: 400, efficiency: 20.0, voltage: 37.2, current: 11.2, length: 2.0, width: 1.0 },
+                'commercial_mono': { power: 540, efficiency: 21.0, voltage: 45.5, current: 13.2, length: 2.3, width: 1.13 },
+                'utility_mono': { power: 580, efficiency: 21.5, voltage: 46.2, current: 13.8, length: 2.38, width: 1.13 },
+                'bifacial': { power: 580, efficiency: 22.0, voltage: 46.2, current: 13.8, length: 2.38, width: 1.13 }
+            };
+            return specs[moduleType] || specs['residential_mono'];
+        }
+
+        // Get battery specifications
+        function getBatterySpecs(batteryType) {
+            const specs = {
+                'lithium_iron': { 
+                    costPerKWh: 400,
+                    efficiency: 0.95,
+                    cycles: 6000
+                },
+                'lithium_ion': { 
+                    costPerKWh: 350,
+                    efficiency: 0.92,
+                    cycles: 5000
+                },
+                'lead_acid': { 
+                    costPerKWh: 150,
+                    efficiency: 0.85,
+                    cycles: 1500
+                }
+            };
+            return specs[batteryType] || specs['lithium_iron'];
+        }
+
+        // Get orientation factor
+        function getOrientationFactor(orientation) {
+            const factors = {
+                'south': 1.0,
+                'southeast': 0.96,
+                'southwest': 0.96,
+                'east': 0.88,
+                'west': 0.88
+            };
+            return factors[orientation] || 1.0;
+        }
+
+        // Calculate battery system
+        function calculateBatterySystem(systemCapacityKW) {
+            if (!batteryEnabled) return null;
+
+            try {
+                const batteryType = document.getElementById('batteryType').value;
+                const batteryStrategy = document.getElementById('batteryStrategy').value;
+                const backupDuration = parseFloat(document.getElementById('backupDuration').value) || 4;
+                const criticalLoad = parseFloat(document.getElementById('criticalLoad').value) || 5;
+
+                const batterySpecs = getBatterySpecs(batteryType);
+
+                // Calculate required capacity based on strategy
+                let requiredCapacityKWh;
+                if (batteryStrategy === 'backup' || batteryStrategy === 'off_grid') {
+                    requiredCapacityKWh = criticalLoad * backupDuration;
+                } else if (batteryStrategy === 'self_consumption') {
+                    requiredCapacityKWh = systemCapacityKW * 4; // 4 hours of production
+                } else if (batteryStrategy === 'time_shift') {
+                    requiredCapacityKWh = systemCapacityKW * 3; // 3 hours storage
+                } else {
+                    requiredCapacityKWh = systemCapacityKW * 2; // Default 2 hours
+                }
+
+                // Calculate power rating
+                const batteryPowerKW = batteryStrategy === 'backup' ? criticalLoad : 
+                                      Math.min(requiredCapacityKWh, systemCapacityKW);
+
+                // Calculate number of battery modules
+                const moduleCapacityKWh = currentSystemType === 'residential' ? 13.5 : 
+                                         currentSystemType === 'commercial' ? 74 : 250;
+                const batteryModules = Math.ceil(requiredCapacityKWh / moduleCapacityKWh);
+                const actualCapacityKWh = batteryModules * moduleCapacityKWh;
+
+                // Calculate costs
+                const batteryCost = actualCapacityKWh * batterySpecs.costPerKWh;
+                const inverterCost = batteryPowerKW * 300; // $300/kW for battery inverter
+                const installationCost = (batteryCost + inverterCost) * 0.2; // 20% installation
+                const totalCost = batteryCost + inverterCost + installationCost;
+
+                return {
+                    capacityKWh: actualCapacityKWh,
+                    powerKW: batteryPowerKW,
+                    batteryModules: batteryModules,
+                    moduleCapacityKWh: moduleCapacityKWh,
+                    batteryCost: batteryCost,
+                    inverterCost: inverterCost,
+                    installationCost: installationCost,
+                    totalCost: totalCost,
+                    strategy: batteryStrategy,
+                    chemistry: batteryType,
+                    specs: batterySpecs
+                };
+            } catch (error) {
+                console.error('Battery calculation error:', error);
+                return null;
+            }
+        }
+
+        // Main calculation function
+        function calculateSystem() {
+            try {
+                // Get input values
+                const systemCapacity = parseFloat(document.getElementById('systemCapacity').value);
+                const capacityUnit = document.getElementById('capacityUnit').value;
+                const systemCapacityKW = capacityUnit === 'MW' ? systemCapacity * 1000 : systemCapacity;
+                const systemCapacityW = systemCapacityKW * 1000;
+                
+                const roofArea = parseFloat(document.getElementById('roofArea').value);
+                const roofOrientation = document.getElementById('roofOrientation').value;
+                const roofTilt = parseFloat(document.getElementById('roofTilt').value);
+                const shadingFactor = parseFloat(document.getElementById('shadingFactor').value);
+                const moduleType = document.getElementById('moduleType').value;
+                const inverterType = document.getElementById('inverterType').value;
+                const solarIrradiance = parseFloat(document.getElementById('solarIrradiance').value);
+                const installationType = document.getElementById('installationType').value;
+
+                // Get module specifications
+                const moduleSpecs = getModuleSpecs(moduleType);
+                
+                // Calculate basic system parameters
+                const moduleCount = Math.ceil(systemCapacityW / moduleSpecs.power);
+                const actualSystemCapacityKW = (moduleCount * moduleSpecs.power) / 1000;
+                
+                // Calculate area requirements
+                const moduleArea = moduleSpecs.length * moduleSpecs.width;
+                const totalModuleArea = moduleCount * moduleArea;
+                const spacingFactor = installationType.includes('rooftop') ? 1.1 : 1.4;
+                const requiredArea = totalModuleArea * spacingFactor;
+                
+                // Check if system fits
+                const areaUtilization = (requiredArea / roofArea) * 100;
+                const fitsOnRoof = requiredArea <= roofArea;
+                
+                // Calculate performance factors
+                const orientationFactor = getOrientationFactor(roofOrientation);
+                const tiltFactor = Math.max(0.85, 1 - (Math.abs(roofTilt - 30) * 0.01));
+                const shadingLoss = shadingFactor / 100;
+                const overallEfficiency = orientationFactor * tiltFactor * (1 - shadingLoss);
+                
+                // String calculations
+                let modulesPerString, stringCount;
+                if (inverterType === 'micro') {
+                    modulesPerString = 1;
+                    stringCount = moduleCount;
+                } else {
+                    const maxStringVoltage = installationType.includes('residential') ? 600 : 1000;
+                    modulesPerString = Math.floor(maxStringVoltage * 0.85 / moduleSpecs.voltage);
+                    stringCount = Math.ceil(moduleCount / modulesPerString);
+                }
+                
+                // Energy calculations
+                const performanceRatio = currentSystemType === 'residential' ? 0.78 : 
+                                       currentSystemType === 'commercial' ? 0.80 : 0.82;
+                const annualEnergyKWh = actualSystemCapacityKW * solarIrradiance * 365 * performanceRatio * overallEfficiency;
+                const monthlyEnergyKWh = annualEnergyKWh / 12;
+                
+                // Calculate battery system
+                const batterySystem = calculateBatterySystem(actualSystemCapacityKW);
+                
+                // Store system data globally
+                systemData = {
+                    systemCapacityKW: actualSystemCapacityKW,
+                    moduleCount,
+                    modulesPerString,
+                    stringCount,
+                    requiredArea,
+                    areaUtilization,
+                    fitsOnRoof,
+                    annualEnergyKWh,
+                    monthlyEnergyKWh,
+                    moduleSpecs,
+                    overallEfficiency,
+                    installationType,
+                    inverterType,
+                    batterySystem
+                };
+                
+                // Display results
+                displayResults(systemData);
+                
+            } catch (error) {
+                console.error('Calculation error:', error);
+                alert('Error in calculation. Please check your input values.');
+            }
+        }
+
+        // Display calculation results
+        function displayResults(data) {
+            const container = document.getElementById('results-container');
+            const systemType = currentSystemType.charAt(0).toUpperCase() + currentSystemType.slice(1);
+            
+            let html = `
+                <h2 class="section-title">📊 ${systemType} System Design</h2>
+                
+                <div class="result-card ${data.fitsOnRoof ? 'success' : 'warning'}">
+                    <div class="result-header">
+                        <span class="result-icon">${data.fitsOnRoof ? '✅' : '⚠️'}</span>
+                        <span class="result-title">Space Requirements</span>
+                    </div>
+                    <div class="result-value">${data.requiredArea.toFixed(0)} m² required</div>
+                    <div class="result-details">
+                        Available area: ${document.getElementById('roofArea').value} m²<br>
+                        Utilization: ${data.areaUtilization.toFixed(1)}%<br>
+                        ${data.fitsOnRoof ? 'System fits comfortably' : 'Insufficient space - reduce system size'}
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">☀️</span>
+                        <span class="result-title">PV Array Configuration</span>
+                    </div>
+                    <div class="result-value">${data.moduleCount} × ${data.moduleSpecs.power}W panels</div>
+                    <div class="result-details">
+                        System capacity: ${data.systemCapacityKW.toFixed(1)} kW<br>
+                        ${data.stringCount} strings × ${data.modulesPerString} panels<br>
+                        Panel efficiency: ${data.moduleSpecs.efficiency}%
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">⚡</span>
+                        <span class="result-title">Electrical Configuration</span>
+                    </div>
+                    <div class="result-value">${data.inverterType} inverters</div>
+                    <div class="result-details">
+                        String voltage: ${(data.modulesPerString * data.moduleSpecs.voltage).toFixed(0)}V<br>
+                        String current: ${data.moduleSpecs.current.toFixed(1)}A<br>
+                        Installation: ${data.installationType.replace('_', ' ')}
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🔋</span>
+                        <span class="result-title">Energy Production</span>
+                    </div>
+                    <div class="result-value">${data.annualEnergyKWh.toFixed(0)} kWh/year</div>
+                    <div class="result-details">
+                        Monthly average: ${data.monthlyEnergyKWh.toFixed(0)} kWh<br>
+                        Daily average: ${(data.annualEnergyKWh/365).toFixed(0)} kWh<br>
+                        System efficiency: ${(data.overallEfficiency * 100).toFixed(1)}%
+                    </div>
+                </div>
+            `;
+
+            // Add battery storage results if enabled
+            if (batteryEnabled && data.batterySystem) {
+                html += `
+                    <div class="result-card" style="background: linear-gradient(135deg, #4caf50 0%, #81c784 100%); color: white; border-left-color: #4caf50;">
+                        <div class="result-header">
+                            <span class="result-icon">🔋</span>
+                            <span class="result-title">Battery Storage System</span>
+                        </div>
+                        <div class="result-value" style="color: white;">${data.batterySystem.capacityKWh.toFixed(1)} kWh capacity</div>
+                        <div class="result-details" style="color: white; opacity: 0.9;">
+                            Power rating: ${data.batterySystem.powerKW.toFixed(1)} kW<br>
+                            Strategy: ${data.batterySystem.strategy.replace('_', ' ')}<br>
+                            Technology: ${data.batterySystem.chemistry.replace('_', ' ')}<br>
+                            Estimated cost: ${data.batterySystem.totalCost.toLocaleString()}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">💰</span>
+                        <span class="result-title">Estimated System Cost</span>
+                    </div>
+                    <div class="result-value">${calculateSystemCost(data).toLocaleString()}</div>
+                    <div class="result-details">
+                        Solar system: ${(data.systemCapacityKW * getCostPerWatt()).toLocaleString()}<br>
+                        ${batteryEnabled && data.batterySystem ? `Battery storage: ${data.batterySystem.totalCost.toLocaleString()}<br>` : ''}
+                        Before incentives and rebates
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Installation calculations
+        function calculateInstallation() {
+            if (!systemData) {
+                alert('Please calculate system design first');
+                return;
+            }
+
+            const roofMaterial = document.getElementById('roofMaterial').value;
+            const roofAge = parseInt(document.getElementById('roofAge').value);
+            const structuralRating = document.getElementById('structuralRating').value;
+            const accessibility = document.getElementById('accessibility').value;
+
+            let complexity = 'Standard';
+            let installDays = Math.ceil(systemData.systemCapacityKW / (currentSystemType === 'residential' ? 3 : currentSystemType === 'commercial' ? 15 : 100));
+            let additionalRequirements = [];
+
+            if (roofAge > 15) additionalRequirements.push('Roof inspection recommended');
+            if (structuralRating === 'fair' || structuralRating === 'poor') {
+                additionalRequirements.push('Structural assessment required');
+                complexity = 'Complex';
+            }
+            if (accessibility === 'difficult') {
+                additionalRequirements.push('Special access equipment needed');
+                complexity = 'Complex';
+            }
+
+            const results = `
+                <div class="result-card ${complexity === 'Complex' ? 'warning' : 'success'}">
+                    <div class="result-header">
+                        <span class="result-icon">${complexity === 'Complex' ? '⚠️' : '✅'}</span>
+                        <span class="result-title">Installation Complexity: ${complexity}</span>
+                    </div>
+                    <div class="result-value">${installDays} days estimated</div>
+                    <div class="result-details">
+                        Roof material: ${roofMaterial.replace('_', ' ')}<br>
+                        Structural rating: ${structuralRating}<br>
+                        Access level: ${accessibility}
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🔧</span>
+                        <span class="result-title">Equipment Requirements</span>
+                    </div>
+                    <div class="result-value">${systemData.moduleCount} panels + mounting system</div>
+                    <div class="result-details">
+                        Inverters: ${systemData.stringCount} ${systemData.inverterType} units<br>
+                        DC cabling: ~${(systemData.moduleCount * 2).toFixed(0)}m<br>
+                        Monitoring system: 1 unit
+                    </div>
+                </div>
+                
+                ${additionalRequirements.length > 0 ? `
+                <div class="result-card warning">
+                    <div class="result-header">
+                        <span class="result-icon">📋</span>
+                        <span class="result-title">Additional Requirements</span>
+                    </div>
+                    <div class="result-details">
+                        ${additionalRequirements.map(req => `• ${req}`).join('<br>')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('installation-results').innerHTML = results;
+        }
+
+        // Electrical calculations
+        function calculateElectrical() {
+            if (!systemData) {
+                alert('Please calculate system design first');
+                return;
+            }
+
+            const gridVoltage = document.getElementById('gridVoltage').value;
+            const meterType = document.getElementById('meterType').value;
+            const mainPanelUpgrade = document.getElementById('mainPanelUpgrade').value;
+
+            const systemCurrentAC = systemData.systemCapacityKW * 1000 / (240 * 0.95);
+            const breakerSize = Math.ceil(systemCurrentAC * 1.25);
+            const dcCableSize = systemData.systemCapacityKW < 10 ? '12 AWG' : systemData.systemCapacityKW < 25 ? '10 AWG' : '8 AWG';
+
+            const results = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">⚡</span>
+                        <span class="result-title">Electrical Specifications</span>
+                    </div>
+                    <div class="result-value">${systemCurrentAC.toFixed(1)}A AC current</div>
+                    <div class="result-details">
+                        AC breaker size: ${breakerSize}A<br>
+                        Grid connection: ${gridVoltage}<br>
+                        Metering: ${meterType.replace('_', ' ')}
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🔌</span>
+                        <span class="result-title">Wiring & Components</span>
+                    </div>
+                    <div class="result-value">DC: ${dcCableSize} | AC: 10 AWG</div>
+                    <div class="result-details">
+                        String configuration: ${systemData.stringCount} strings<br>
+                        DC combiner boxes: ${Math.ceil(systemData.stringCount / 8)}<br>
+                        AC disconnect: 1 unit required
+                    </div>
+                </div>
+                
+                ${mainPanelUpgrade !== 'none' ? `
+                <div class="result-card warning">
+                    <div class="result-header">
+                        <span class="result-icon">⚠️</span>
+                        <span class="result-title">Panel Upgrade Required</span>
+                    </div>
+                    <div class="result-value">${mainPanelUpgrade.replace('_', ' ')}</div>
+                    <div class="result-details">
+                        Additional electrical work needed before solar installation
+                    </div>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('electrical-results').innerHTML = results;
+        }
+
+        // Financial calculations
+        function calculateFinancial() {
+            if (!systemData) {
+                alert('Please calculate system design first');
+                return;
+            }
+
+            const currency = document.getElementById('currency').value;
+            const electricityRate = parseFloat(document.getElementById('electricityRate').value);
+            const federalIncentive = parseFloat(document.getElementById('federalIncentive').value);
+            const stateIncentive = parseFloat(document.getElementById('stateIncentive').value);
+            const electricityInflation = parseFloat(document.getElementById('electricityInflation').value);
+
+            const totalSystemCost = calculateSystemCost(systemData);
+            const federalTaxCredit = totalSystemCost * (federalIncentive / 100);
+            const stateTaxCredit = totalSystemCost * (stateIncentive / 100);
+            const netSystemCost = totalSystemCost - federalTaxCredit - stateTaxCredit;
+            
+            const annualSavings = systemData.annualEnergyKWh * electricityRate;
+            const simplePayback = netSystemCost / annualSavings;
+            
+            // 25-year savings calculation
+            let totalSavings = 0;
+            let currentRate = electricityRate;
+            for (let year = 1; year <= 25; year++) {
+                totalSavings += systemData.annualEnergyKWh * currentRate;
+                currentRate *= (1 + electricityInflation / 100);
+            }
+            const netSavings = totalSavings - netSystemCost;
+
+            const results = `
+                <div class="result-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-left-color: #28a745;">
+                    <div class="result-header">
+                        <span class="result-icon">💰</span>
+                        <span class="result-title">Net System Cost</span>
+                    </div>
+                    <div class="result-value" style="color: white;">${formatCurrency(netSystemCost, currency)}</div>
+                    <div class="result-details" style="color: white; opacity: 0.9;">
+                        After incentives and rebates<br>
+                        Payback period: ${simplePayback.toFixed(1)} years<br>
+                        Cost per watt: ${formatCurrency(getCostPerWatt(), currency)}/W
+                    </div>
+                </div>
+                
+                <div class="result-card success">
+                    <div class="result-header">
+                        <span class="result-icon">📈</span>
+                        <span class="result-title">25-Year Net Savings</span>
+                    </div>
+                    <div class="result-value">${formatCurrency(netSavings, currency)}</div>
+                    <div class="result-details">
+                        Total electricity savings: ${formatCurrency(totalSavings, currency)}<br>
+                        Annual savings (year 1): ${formatCurrency(annualSavings, currency)}<br>
+                        ROI: ${((netSavings / netSystemCost) * 100).toFixed(0)}%
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🎁</span>
+                        <span class="result-title">Incentives Applied</span>
+                    </div>
+                    <div class="result-value">${formatCurrency(federalTaxCredit + stateTaxCredit, currency)}</div>
+                    <div class="result-details">
+                        Federal tax credit (${federalIncentive}%): ${formatCurrency(federalTaxCredit, currency)}<br>
+                        State/local incentive (${stateIncentive}%): ${formatCurrency(stateTaxCredit, currency)}<br>
+                        Gross system cost: ${formatCurrency(totalSystemCost, currency)}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('financial-results').innerHTML = results;
+        }
+
+        // Performance calculations
+        function calculatePerformance() {
+            if (!systemData) {
+                alert('Please calculate system design first');
+                return;
+            }
+
+            const systemDegradation = parseFloat(document.getElementById('systemDegradation').value);
+            const inverterEfficiency = parseFloat(document.getElementById('inverterEfficiency').value);
+            const soiling = parseFloat(document.getElementById('soiling').value);
+            const analysisYears = parseInt(document.getElementById('analysisYears').value);
+
+            const totalEfficiency = (inverterEfficiency / 100) * (1 - soiling / 100) * systemData.overallEfficiency;
+            const year1Energy = systemData.annualEnergyKWh * totalEfficiency;
+            
+            let totalLifetimeEnergy = 0;
+            for (let year = 1; year <= analysisYears; year++) {
+                const yearlyDegradation = Math.pow(1 - systemDegradation / 100, year - 1);
+                totalLifetimeEnergy += year1Energy * yearlyDegradation;
+            }
+
+            const finalYearOutput = year1Energy * Math.pow(1 - systemDegradation / 100, analysisYears - 1);
+            const capacityFactor = (year1Energy / (systemData.systemCapacityKW * 8760)) * 100;
+
+            const results = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">⚡</span>
+                        <span class="result-title">Year 1 Performance</span>
+                    </div>
+                    <div class="result-value">${year1Energy.toFixed(0)} kWh</div>
+                    <div class="result-details">
+                        System efficiency: ${(totalEfficiency * 100).toFixed(1)}%<br>
+                        Capacity factor: ${capacityFactor.toFixed(1)}%<br>
+                        Daily average: ${(year1Energy / 365).toFixed(0)} kWh
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">📈</span>
+                        <span class="result-title">${analysisYears}-Year Lifetime Energy</span>
+                    </div>
+                    <div class="result-value">${(totalLifetimeEnergy / 1000).toFixed(0)} MWh</div>
+                    <div class="result-details">
+                        Total production: ${totalLifetimeEnergy.toFixed(0)} kWh<br>
+                        Final year output: ${finalYearOutput.toFixed(0)} kWh<br>
+                        Output retention: ${((finalYearOutput / year1Energy) * 100).toFixed(1)}%
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🌱</span>
+                        <span class="result-title">Environmental Impact</span>
+                    </div>
+                    <div class="result-value">${(totalLifetimeEnergy * 0.0004).toFixed(0)} tons CO₂ avoided</div>
+                    <div class="result-details">
+                        Equivalent to planting ${Math.round(totalLifetimeEnergy * 0.0004 * 16)} trees<br>
+                        Or removing ${Math.round(totalLifetimeEnergy * 0.0004 / 4.6)} cars for 1 year<br>
+                        Carbon offset over ${analysisYears} years
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('performance-results').innerHTML = results;
+        }
+
+        // Battery analysis calculations
+        function calculateBatteryAnalysis() {
+            if (!batteryEnabled || !systemData || !systemData.batterySystem) {
+                alert('Please enable battery storage in System Design tab first');
+                return;
+            }
+
+            const outageFrequency = parseInt(document.getElementById('outageFrequency').value);
+            const peakDemandCharge = parseFloat(document.getElementById('peakDemandCharge').value);
+            const timeOfUseSpread = parseFloat(document.getElementById('timeOfUseSpread').value);
+
+            const battery = systemData.batterySystem;
+            const dailyCycles = battery.strategy === 'self_consumption' ? 1 : battery.strategy === 'time_shift' ? 1 : 0.5;
+            const annualCycles = dailyCycles * 365;
+            const cycleLife = battery.specs.cycles;
+            const batteryLifeYears = Math.floor(cycleLife / annualCycles);
+
+            const annualBackupValue = outageFrequency * 8 * parseFloat(document.getElementById('criticalLoad').value) * 0.50;
+            const annualDemandSavings = battery.powerKW * peakDemandCharge * 12;
+            const annualArbitrage = battery.capacityKWh * 300 * timeOfUseSpread;
+            const totalAnnualValue = annualBackupValue + annualDemandSavings + annualArbitrage;
+
+            const results = `
+                <div class="result-card" style="background: linear-gradient(135deg, #4caf50 0%, #81c784 100%); color: white; border-left-color: #4caf50;">
+                    <div class="result-header">
+                        <span class="result-icon">🔋</span>
+                        <span class="result-title">Battery System Overview</span>
+                    </div>
+                    <div class="result-value" style="color: white;">${battery.capacityKWh.toFixed(1)} kWh / ${battery.powerKW.toFixed(1)} kW</div>
+                    <div class="result-details" style="color: white; opacity: 0.9;">
+                        Technology: ${battery.chemistry.replace('_', ' ')}<br>
+                        Strategy: ${battery.strategy.replace('_', ' ')}<br>
+                        Round-trip efficiency: ${(battery.specs.efficiency * 100).toFixed(1)}%
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-icon">🔄</span>
+                        <span class="result-title">Cycling Analysis</span>
+                    </div>
+                    <div class="result-value">${annualCycles.toFixed(0)} cycles/year</div>
+                    <div class="result-details">
+                        Daily cycles: ${dailyCycles.toFixed(1)}<br>
+                        Battery life: ${batteryLifeYears} years<br>
+                        Total cycle life: ${cycleLife.toLocaleString()} cycles
+                    </div>
+                </div>
+                
+                <div class="result-card success">
+                    <div class="result-header">
+                        <span class="result-icon">💰</span>
+                        <span class="result-title">Annual Battery Value</span>
+                    </div>
+                    <div class="result-value">${totalAnnualValue.toFixed(0)}/year</div>
+                    <div class="result-details">
+                        Backup value: ${annualBackupValue.toFixed(0)}<br>
+                        Demand charge savings: ${annualDemandSavings.toFixed(0)}<br>
+                        Time-of-use arbitrage: ${annualArbitrage.toFixed(0)}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('battery-results').innerHTML = results;
+        }
+
+        // Helper functions
+        function getCostPerWatt() {
+            if (currentSystemType === 'residential') return 2.80;
+            if (currentSystemType === 'commercial') return 2.20;
+            return 1.50; // utility
+        }
+
+        function calculateSystemCost(data) {
+            const solarCost = data.systemCapacityKW * 1000 * getCostPerWatt();
+            const batteryCost = batteryEnabled && data.batterySystem ? data.batterySystem.totalCost : 0;
+            return solarCost + batteryCost;
+        }
+
+        function formatCurrency(amount, currency) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Initialize with default values
+        updateDefaultValues('residential');
+    </script>
+</body>
+</html>
